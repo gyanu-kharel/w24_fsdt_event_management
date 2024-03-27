@@ -1,0 +1,18 @@
+Feature list
+1. User registration
+    a. Users can create their profile in the system
+    b. Registered users can create events
+
+2. Event creation
+    a. Requires event details like time, place, capacity(limited or unlimited)
+
+3. Invitations
+    a. Can send invite to users who are in the system
+
+4. Invite confirmations
+    a. Invitees can confirm their spot
+    b. Capacity maybe limited so confirmations will be on first come first serve basis
+    c. Invitees can withdraw their confirmation before deadline(or some hours before event)
+
+5. Event summary
+    a. Event summary will be provided to the event creator
