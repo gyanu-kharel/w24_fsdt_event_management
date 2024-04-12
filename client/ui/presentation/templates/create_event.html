@@ -1,0 +1,84 @@
+{% extends 'navbar.html' %}
+
+{% block content %}
+
+<div class="card login-container">
+    <div class="card-header text-center">Create new event</div>
+    <div class="card-body">
+      <form method="post" action="{% url 'create_event' %}">
+        {% csrf_token %}
+        {% if error_msg %}
+          <p style="color: red;">{{error_msg}}</p>
+        {% endif %}
+        <div class="form-group">
+          <label>Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="form-control"
+          />
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            class="form-control"
+          />
+        </div>
+        <div class="form-group">
+            <label>Date</label>
+            <input
+                type="text"
+                id="date"
+                name="date"
+                class="form-control"
+            />
+        </div>
+        <div class="form-group">
+            <label>Start Time</label>
+            <input
+                type="text"
+                id="start_time"
+                name="start_time"
+                class="form-control"
+            />
+        </div>
+        <div class="form-group">
+            <label>End Time</label>
+            <input
+                type="text"
+                id="end_time"
+                name="end_time"
+                class="form-control"
+            />
+        </div>
+        <div class="form-group">
+            <label>Capacity</label>
+            <input
+                type="text"
+                id="capacity"
+                name="capacity"
+                class="form-control"
+            />
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <input
+                type="text"
+                id="description"
+                name="description"
+                class="form-control"
+            />
+        </div>
+        <div class="form-group mt-2">
+           <input type="submit" class="btn btn-primary" value="Create">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
