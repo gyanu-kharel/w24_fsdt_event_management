@@ -6,6 +6,10 @@ class RegisterUser(BaseModel):
     password: str
 
 
+class LoginUser(BaseModel):
+    email: str
+    password: str
+
 
 class AuthResponse(BaseModel):
     access_token: str

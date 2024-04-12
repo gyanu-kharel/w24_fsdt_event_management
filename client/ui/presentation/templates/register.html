@@ -46,8 +46,11 @@
               style="color: green; display: none"
             ></div>
             <div class="card-body">
-              <form id="registerForm" method="post" action="{% url 'register_post' %}">
+              <form id="registerForm" method="post" action="{% url 'register' %}">
                 {% csrf_token %}
+                {% if error_msg %}
+                <p style="color: red;">{{ error_msg }}</p>
+                {% endif %}
                 <div class="form-group">
                   <label>Name</label>
                   <input

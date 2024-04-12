@@ -2,14 +2,18 @@ import bcrypt
 from datetime import datetime, timedelta
 import jwt
 
-def hash_password(password):
+def get_password_hash(password):
+    pwd_bytes = password.encode('utf-8')
     salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed_password
+    hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
+    string_password = hashed_password.decode('utf8')
+    return string_password
 
 
-def check_password(plain_password, hashed_password):
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
+def verify_password(plain_password, hashed_password):
+    password_byte_enc = plain_password.encode('utf-8')
+    hashed_password = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(password_byte_enc, hashed_password)
 
 
 SECRET_KEY = "my_super_duper_secret_key"

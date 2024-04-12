@@ -42,8 +42,11 @@
             ></div>
             <div id="success" style="display: none; color: green"></div>
             <div class="card-body">
-              <form id="loginForm">
+              <form id="loginForm" method="post" action="{% url 'login' %}">
                 {% csrf_token %}
+                {% if error_msg %}
+                  <p style="color: red;">{{error_msg}}</p>
+                {% endif %}
                 <div class="form-group">
                   <label>Email</label>
                   <input
@@ -70,7 +73,7 @@
                 </div>
                 <div class="center-btn">
                   <input
-                    type="button"
+                    type="submit"
                     class="btn btn-primary btn-width"
                     value="Login"
                   />
