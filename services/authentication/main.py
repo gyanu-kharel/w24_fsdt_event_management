@@ -1,11 +1,29 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
 from models import User
-from schemas import RegisterUser, AuthResponse, LoginUser
+from schemas import RegisterUser, AuthResponse, LoginUser, GetUserResponse
 from database import auth_db_collection
 from utils import get_password_hash, create_access_token, verify_password
+import jwt
+from typing import List
+
 
 app = FastAPI()
 
+SECRET_KEY = "my_super_duper_secret_key"
+
+# Dependency to check for Bearer token in the request header
+async def verify_token(authorization: str = Header(...)):
+    # Check if the authorization header starts with 'Bearer'
+    if not authorization or not authorization.startswith("Bearer"):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Extract the token
+    token = authorization.split(" ")[1]
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return decoded_token
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 
 @app.post("/auth/register",
@@ -66,3 +84,14 @@ async def login(request:LoginUser):
     jwt = create_access_token(jwt_data)
     token = AuthResponse(access_token=jwt)
     return token
+
+@app.get('/auth/users', response_model=List[GetUserResponse], response_model_by_alias=False)
+async def get_users(current_user=Depends(verify_token)):
+    users = auth_db_collection.find()
+    users_list = await users.to_list(length=20)
+    result = []
+    for user in users_list:
+        if str(user["_id"]) != current_user["id"]:
+            result.append(GetUserResponse(id=str(user["_id"]), name=user["full_name"]))
+
+    return result

@@ -1,0 +1,47 @@
+{% extends 'navbar.html' %}
+
+{% block content %}
+
+    <div class="container m-5">
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Organizer</th>
+                <th scope="col">Title</th>
+                <th scope="col">Location</th>
+                <th scope="col">Date</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+                <th scope="col">Capacity</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for invite in invitations %}
+                <tr>
+                    <td>{{invite.organizer}}</td>
+                    <td>{{invite.event_title}}</td>
+                    <td>{{invite.event_location}}</td>
+                    <td>{{invite.event_date}}</td>
+                    <td>{{invite.event_start_time}}</td>
+                    <td>{{invite.event_end_time}}</td>
+                    <td>{{invite.event_capacity}}</td>
+                    <td>
+                      <td>
+                        {% if not invite.is_accepted %}
+                          <a class="btn btn-success" href="{% url 'accept_invite' invite_id=invite.id %}">Accept</a>
+                          <a class="btn btn-danger"  href="{% url 'decline_invite' invite_id=invite.id %}">Decline</a>
+                          {% elif invite.is_accepted %}
+                          <button class="btn btn-success" disabled>Accpeted</button>
+                          {% else %}
+                          <button class="btn btn-danger" disabled>Declined</button>
+                          {% endif %}
+                      </td>
+                    </td>
+                  </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+    </div>
+
+{% endblock %}

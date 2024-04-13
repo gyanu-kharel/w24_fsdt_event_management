@@ -18,3 +18,12 @@ class Event(BaseModel):
     end_time: str = Field(...)
     capacity: int | None = Field(...)
     creator_id: str = Field(...)
+
+
+class Invitation(BaseModel):
+    id: Optional[PyObjectId] = Field(alias='_id', default=None)
+    event_id: str = Field(...)
+    organizer: str = Field(...)
+    guest_id: str = Field(...)
+    invited_date: str = Field(...)
+    is_accepted: bool | None = Field(default=None)

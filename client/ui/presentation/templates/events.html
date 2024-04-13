@@ -28,7 +28,7 @@
                     <td>{{event.end_time}}</td>
                     <td>{{event.capacity}}</td>
                     <td>
-                        <a class="btn btn-primary">Invite</a>
+                        <a class="btn btn-primary" href="{% url 'event_invitations' event_id=event.id %}">Invite</a>
                         <a class="btn btn-danger" href="{% url 'delete_event' event_id=event.id %}">Delete</a>
                     </td>
                   </tr>

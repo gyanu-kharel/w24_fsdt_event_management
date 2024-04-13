@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, Header
-from schemas import EventCreatedResponse, CreateEvent, GetEvents
-from models import Event
-from database import events_db_collection
+from schemas import EventCreatedResponse, CreateEvent, GetEvents, CreateInvitation, InvitationListReponse, RespondInvite, EventsListResponse
+from models import Event, Invitation
+from database import events_db_collection, invitations_db_collection
 import jwt
 from typing import List
 from fastapi.responses import Response
 from bson import ObjectId
+from datetime import datetime
 
 app = FastAPI()
 
@@ -92,3 +93,86 @@ async def delete_event(event_id, current_user=Depends(verify_token)):
         return Response(status_code=200)
     else:
         return Response(status_code=400)
+    
+
+
+@app.post("/events/{event_id}/invitations")
+async def create_invitation(event_id, request:CreateInvitation, current_user=Depends(verify_token)):
+    event = await events_db_collection.find_one({'_id': event_id})
+    invitation = Invitation(event_id=event_id,
+                            organizer=current_user["name"],
+                            guest_id=request.user_id,
+                            invited_date=str(datetime.now()))
+    
+    invitation_created = await invitations_db_collection.insert_one(invitation.model_dump(by_alias=True, exclude=["id"]))
+
+    if invitation_created.inserted_id:
+        return Response(status_code=200)
+    else:
+        return Response(status_code=400)
+    
+
+
+@app.get("/events/invitations", response_model=List[InvitationListReponse], response_model_by_alias=False)
+async def get_invitations(current_user=Depends(verify_token)):
+    invitations = invitations_db_collection.find({'guest_id': current_user["id"]})
+    invitations_list = await invitations.to_list(length=None)
+    result = []
+
+    for item in invitations_list:
+        event_obj = ObjectId(item["event_id"])
+        event = await events_db_collection.find_one({'_id': event_obj})
+        result.append(InvitationListReponse(
+            id=str(item["_id"]),
+            event_id=item["event_id"],
+            guest_id=item["guest_id"],
+            invited_date=item["invited_date"],
+            is_accepted=item["is_accepted"],
+            organizer=item["organizer"],
+            event_date=event["date"],
+            event_end_time=event["end_time"],
+            event_start_time=event["start_time"],
+            event_location=event["location"],
+            event_title=event["title"],
+            event_capacity=event["capacity"]))
+
+    return result                   
+
+
+@app.put("/events/invitations/{invite_id}")
+async def respond_invite(invite_id, request:RespondInvite, current_user=Depends(verify_token)):
+    invite_obj = ObjectId(invite_id)
+    invitation = await invitations_db_collection.find_one({'_id': invite_obj})
+
+    update = {"$set": {
+        "is_accepted": request.confirm
+    }}
+
+    updated = await invitations_db_collection.update_one({'_id': invite_obj}, update)
+
+    if updated.modified_count == 1:
+        return Response(status_code=200)    
+    else:
+        return Response(status_code=400)
+
+
+@app.get("/events/all", response_model=List[EventsListResponse], response_model_by_alias=False)
+async def get_events(current_user=Depends(verify_token)):
+    result = []
+    events = events_db_collection.find()
+    events_list = await events.to_list(length=None)
+
+    for event in events_list:
+        result.append(EventsListResponse(
+            id = str(event["_id"]),
+            title= event["title"],
+            description= event["description"],
+            date=event["date"],
+            location=event["location"],
+            start_time=event["start_time"],
+            end_time=event["end_time"],
+            capacity=event["capacity"]
+        ))
+
+    
+    return result

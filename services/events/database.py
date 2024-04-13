@@ -7,3 +7,4 @@ client = motor.motor_asyncio.AsyncIOMotorClient(uri)
 db = client.w24ems
 
 events_db_collection = db.get_collection("events")
+invitations_db_collection = db.get_collection("invitations")

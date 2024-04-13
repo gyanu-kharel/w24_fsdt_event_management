@@ -40,13 +40,13 @@
               <a class="nav-link" href="{% url 'events' %}">My events</a>
             </li>
             <li>
-              <a class="nav-link" href="#">Invitations</a>
+              <a class="nav-link" href="{% url 'invitations' %}">Invitations</a>
             </li>
             <li>
               <a class="nav-link" href="#">Requests</a>
             </li>
           </ul>
-          <button class="btn btn-outline-danger" type="submit">Logout</button>
+          <a class="btn btn-outline-danger" href="{% url 'logout' %}">Logout</a>
         </div>
       </div>
     </nav>
