@@ -7,6 +7,7 @@ from typing import List
 from fastapi.responses import Response
 from bson import ObjectId
 from datetime import datetime
+import requests
 
 app = FastAPI()
 
@@ -98,7 +99,8 @@ async def delete_event(event_id, current_user=Depends(verify_token)):
 
 @app.post("/events/{event_id}/invitations")
 async def create_invitation(event_id, request:CreateInvitation, current_user=Depends(verify_token)):
-    event = await events_db_collection.find_one({'_id': event_id})
+    event_obj = ObjectId(event_id)
+    event = await events_db_collection.find_one({'_id': event_obj})
     invitation = Invitation(event_id=event_id,
                             organizer=current_user["name"],
                             guest_id=request.user_id,
@@ -107,6 +109,48 @@ async def create_invitation(event_id, request:CreateInvitation, current_user=Dep
     invitation_created = await invitations_db_collection.insert_one(invitation.model_dump(by_alias=True, exclude=["id"]))
 
     if invitation_created.inserted_id:
+        profile = requests.get(f'http://authentication:8000/auth/profile/{request.user_id}')
+        request_body = {
+            'to': profile.json()["email"],
+            'subject': "Invitation received",
+            'body': """<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Invitation to an Amazing Event</title>
+            </head>
+            <body>
+                <table style="max-width: 600px; margin: 0 auto; padding: 20px; border-collapse: collapse; border-radius: 5px; border: 1px solid #ccc;">
+                    <tr>
+                        <td style="text-align: center; padding-bottom: 20px;">
+                            <h2 style="color: #333;">You're Invited!</h2>
+                            <p style="font-size: 16px;">Join Us for an Unforgettable Event</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 20px;">
+                            <p>Dear {guest_name},</p>
+                            <p>We are excited to extend a special invitation to you for {event_title}! This event promises to be an inspiring and enriching experience.</p>
+                            <p>Here are the details:</p>
+                            <ul>
+                                <li><strong>Date:</strong> {event_date}</li>
+                                <li><strong>Time:</strong> {event_start_time}</li>
+                                <li><strong>Location:</strong> {event_location}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>""".format(
+                guest_name=profile.json()["name"],
+                event_title=event["title"],
+                event_date=event["date"],
+                event_start_time=event["start_time"],
+                event_location=event["location"]
+            )
+        }
+        response = requests.post('http://notifications:8003/notifications/email', json=request_body)
         return Response(status_code=200)
     else:
         return Response(status_code=400)

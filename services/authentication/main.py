@@ -1,10 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends, Header
 from models import User
-from schemas import RegisterUser, AuthResponse, LoginUser, GetUserResponse
+from schemas import RegisterUser, AuthResponse, LoginUser, GetUserResponse, GetProfileResponse
 from database import auth_db_collection
 from utils import get_password_hash, create_access_token, verify_password
 import jwt
 from typing import List
+from bson import ObjectId
 
 
 app = FastAPI()
@@ -95,3 +96,12 @@ async def get_users(current_user=Depends(verify_token)):
             result.append(GetUserResponse(id=str(user["_id"]), name=user["full_name"]))
 
     return result
+
+
+@app.get('/auth/profile/{user_id}', response_model=GetProfileResponse, response_model_by_alias=False)
+async def get_user(user_id):
+    user_obj = ObjectId(user_id)
+
+    user = await auth_db_collection.find_one({'_id': user_obj})
+
+    return GetProfileResponse(id=user_id, name=user["full_name"], email=user["email"])

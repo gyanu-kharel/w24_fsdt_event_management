@@ -14,5 +14,11 @@ class GetUserResponse(BaseModel):
     id: str
     name: str
     
+
+class GetProfileResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    
 class AuthResponse(BaseModel):
     access_token: str
